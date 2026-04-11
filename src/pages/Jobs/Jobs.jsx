@@ -16,7 +16,7 @@ const Jobs = () => {
   const [quickFilterText, setQuickFilterText] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [form] = Form.useForm();
-  
+
   const gridRef = useRef();
 
   const fetchJobs = async () => {
@@ -139,9 +139,9 @@ const Jobs = () => {
 
   const onExportClick = useCallback(() => {
     if (gridRef.current && gridRef.current.api) {
-      gridRef.current.api.exportDataAsCsv({ 
+      gridRef.current.api.exportDataAsCsv({
         fileName: 'jobs_export.csv',
-        onlySelected: true 
+        onlySelected: true
       });
     }
   }, []);
@@ -192,11 +192,11 @@ const Jobs = () => {
   };
 
   const columnDefs = useMemo(() => [
-    { 
-      field: 'title', 
-      headerName: 'Job Title', 
-      flex: 1, 
-      minWidth: 250, 
+    {
+      field: 'title',
+      headerName: 'Job Title',
+      flex: 1,
+      minWidth: 250,
       checkboxSelection: true,
       headerCheckboxSelection: true
     },
@@ -204,9 +204,9 @@ const Jobs = () => {
     { field: 'location', headerName: 'Location', flex: 1 },
     { field: 'type', headerName: 'Type', width: 130 },
     { field: 'status', headerName: 'Status', width: 130, cellRenderer: StatusRenderer },
-    { 
-      headerName: 'Actions', 
-      width: 120, 
+    {
+      headerName: 'Actions',
+      width: 120,
       cellRenderer: ActionCellRenderer,
       sortable: false,
       filter: false,
@@ -221,16 +221,16 @@ const Jobs = () => {
 
   return (
     <div className="container-fluid py-2 h-full flex flex-col">
-      <div className="w-full flex justify-between items-center mb-4">
-        <Input 
-          placeholder="Search jobs..." 
-          prefix={<SearchOutlined className="text-gray-400" />}
-          onChange={(e) => setQuickFilterText(e.target.value)}
-          className="rounded-md shadow-sm"
-          style={{ width: 300 }}
-          allowClear
-        />
+      <div className="w-full flex justify-end items-center mb-4">
         <Space size="middle">
+          <Input
+            placeholder="Search jobs..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            onChange={(e) => setQuickFilterText(e.target.value)}
+            className="rounded-md shadow-sm"
+            style={{ width: 250 }}
+            allowClear
+          />
           {selectedRows.length > 0 && (
             <>
               <Button icon={<DownloadOutlined />} onClick={onExportClick} className="shadow-sm rounded-md" style={{ borderColor: '#10b981', color: '#10b981' }}>
@@ -246,39 +246,37 @@ const Jobs = () => {
           </button>
         </Space>
       </div>
-      
-      <div className="bg-white rounded-md shadow-sm w-full flex flex-col pt-2 mb-6">
-        {data.length === 0 && !loading && (
-          <div className="p-4 text-center border-b border-gray-100">
-            <p className="text-gray-500 mb-3">Database is empty.</p>
-            <button className="btn btn-outline-primary btn-sm" onClick={seedDatabase}>Seed Test Data to MongoDB</button>
-          </div>
-        )}
-        
-        <div className="ag-theme-alpine w-full">
-          <AgGridReact
-            ref={gridRef}
-            rowData={data}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            quickFilterText={quickFilterText}
-            animateRows={true}
-            pagination={true}
-            paginationPageSize={10}
-            domLayout='autoHeight'
-            rowSelection="multiple"
-            onSelectionChanged={onSelectionChanged}
-            suppressRowClickSelection={true}
-            rowHeight={50}
-            suppressCellFocus={true}
-          />
+
+      {data.length === 0 && !loading && (
+        <div className="p-4 text-center border-b border-gray-100">
+          <p className="text-gray-500 mb-3">Database is empty.</p>
+          <button className="btn btn-outline-primary btn-sm" onClick={seedDatabase}>Seed Test Data to MongoDB</button>
         </div>
+      )}
+
+      <div className="ag-theme-alpine w-full">
+        <AgGridReact
+          ref={gridRef}
+          rowData={data}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          quickFilterText={quickFilterText}
+          animateRows={true}
+          pagination={true}
+          paginationPageSize={10}
+          domLayout='autoHeight'
+          rowSelection="multiple"
+          onSelectionChanged={onSelectionChanged}
+          suppressRowClickSelection={true}
+          rowHeight={50}
+          suppressCellFocus={true}
+        />
       </div>
 
-      <Modal 
+      <Modal
         title={<span className="text-lg font-bold">{editingJob ? "Edit Job" : "Add New Job"}</span>}
-        open={isModalVisible} 
-        onOk={handleOk} 
+        open={isModalVisible}
+        onOk={handleOk}
         onCancel={handleCancel}
         okText={editingJob ? "Save Changes" : "Create Job"}
         destroyOnClose
@@ -287,24 +285,24 @@ const Jobs = () => {
           <Form.Item name="title" label="Job Title" rules={[{ required: true, message: 'Please enter job title' }]}>
             <Input placeholder="e.g. Senior Software Engineer" size="large" />
           </Form.Item>
-          
+
           <Form.Item name="department" label="Department" rules={[{ required: true, message: 'Please enter the department' }]}>
             <Input placeholder="e.g. Engineering" size="large" />
           </Form.Item>
-          
+
           <Form.Item name="location" label="Location" rules={[{ required: true, message: 'Please enter location' }]}>
             <Input placeholder="e.g. Remote, New York" size="large" />
           </Form.Item>
 
           <Form.Item name="type" label="Employment Type" rules={[{ required: true, message: 'Please select type' }]}>
-             <Select placeholder="Select Type" size="large">
+            <Select placeholder="Select Type" size="large">
               <Select.Option value="Full-time">Full-time</Select.Option>
               <Select.Option value="Part-time">Part-time</Select.Option>
               <Select.Option value="Contract">Contract</Select.Option>
               <Select.Option value="Internship">Internship</Select.Option>
             </Select>
           </Form.Item>
-          
+
           <Form.Item name="status" label="Current Status" rules={[{ required: true, message: 'Please select a status' }]}>
             <Select placeholder="Select job status" size="large">
               <Select.Option value="Active">Active</Select.Option>

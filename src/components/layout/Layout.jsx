@@ -44,7 +44,7 @@ const AppLayout = () => {
         <Header className="bg-white px-6 flex justify-between items-center shadow-sm">
           <h2 className="text-xl font-semibold m-0 text-slate-800">{getPageTitle()}</h2>
         </Header>
-        <Content className="m-6 p-6 bg-white rounded-lg shadow-sm">
+        <Content className="m-6 p-6">
           <Outlet />
         </Content>
       </AntLayout>

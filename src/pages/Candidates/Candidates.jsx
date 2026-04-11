@@ -230,16 +230,16 @@ const Candidates = () => {
 
   return (
     <div className="container-fluid py-2 h-full flex flex-col">
-      <div className="w-full flex justify-between items-center mb-4">
-        <Input
-          placeholder="Search candidates..."
-          prefix={<SearchOutlined className="text-gray-400" />}
-          onChange={(e) => setQuickFilterText(e.target.value)}
-          className="rounded-md shadow-sm"
-          style={{ width: 300 }}
-          allowClear
-        />
+      <div className="w-full flex justify-end items-center mb-4">
         <Space size="middle">
+          <Input
+            placeholder="Search candidates..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            onChange={(e) => setQuickFilterText(e.target.value)}
+            className="rounded-md shadow-sm"
+            style={{ width: 250 }}
+            allowClear
+          />
           {selectedRows.length > 0 && (
             <>
               <Button icon={<DownloadOutlined />} onClick={onExportClick} className="shadow-sm rounded-md" style={{ borderColor: '#10b981', color: '#10b981' }}>
@@ -256,33 +256,31 @@ const Candidates = () => {
         </Space>
       </div>
 
-      <div className="bg-white rounded-md shadow-sm w-full flex flex-col pt-2 mb-6">
-        {data.length === 0 && !loading && (
-          <div className="p-4 text-center border-b border-gray-100">
-            <p className="text-gray-500 mb-3">Database is empty.</p>
-            <button className="btn btn-outline-primary btn-sm" onClick={seedDatabase}>Seed Test Data to MongoDB</button>
-          </div>
-        )}
-
-        <div className="ag-theme-alpine w-full">
-          <AgGridReact
-            ref={gridRef}
-            rowData={data}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            quickFilterText={quickFilterText}
-            animateRows={true}
-            pagination={true}
-            paginationPageSize={10}
-            domLayout='autoHeight'
-            rowSelection="multiple"
-            onSelectionChanged={onSelectionChanged}
-            suppressRowClickSelection={true}
-            rowHeight={50}
-            suppressCellFocus={true}
-            overlayLoadingTemplate={loading ? '<span class="ag-overlay-loading-center">Fetching candidates...</span>' : null}
-          />
+      {data.length === 0 && !loading && (
+        <div className="p-4 text-center border-b border-gray-100">
+          <p className="text-gray-500 mb-3">Database is empty.</p>
+          <button className="btn btn-outline-primary btn-sm" onClick={seedDatabase}>Seed Test Data to MongoDB</button>
         </div>
+      )}
+
+      <div className="ag-theme-alpine w-full">
+        <AgGridReact
+          ref={gridRef}
+          rowData={data}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          quickFilterText={quickFilterText}
+          animateRows={true}
+          pagination={true}
+          paginationPageSize={10}
+          domLayout='autoHeight'
+          rowSelection="multiple"
+          onSelectionChanged={onSelectionChanged}
+          suppressRowClickSelection={true}
+          rowHeight={50}
+          suppressCellFocus={true}
+          overlayLoadingTemplate={loading ? '<span class="ag-overlay-loading-center">Fetching candidates...</span>' : null}
+        />
       </div>
 
       <Modal
