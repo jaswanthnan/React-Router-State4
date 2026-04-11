@@ -1,0 +1,142 @@
+import { useContext, useState, useEffect } from 'react';
+import { AppContext } from '../../context/AppContext';
+import { api } from '../../services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B5CF6', '#EC4899'];
+
+const Dashboard = () => {
+  const { state } = useContext(AppContext);
+  const [candidatesCount, setCandidatesCount] = useState(0);
+  const [hiredCount, setHiredCount] = useState(0);
+  const [candidatesChartData, setCandidatesChartData] = useState([]);
+  
+  const [activeJobsCount, setActiveJobsCount] = useState(0);
+  const [jobsTypeData, setJobsTypeData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboardCounts = async () => {
+      try {
+        const [candidatesResult, jobsResult] = await Promise.all([
+          api.get('/candidates'),
+          api.get('/jobs')
+        ]);
+
+        // --- Handle Candidates ---
+        setCandidatesCount(candidatesResult.length);
+        setHiredCount(candidatesResult.filter(c => c.status?.toLowerCase() === 'hired').length);
+
+        const statusCounts = candidatesResult.reduce((acc, c) => {
+          const status = c.status || 'Unknown';
+          acc[status] = (acc[status] || 0) + 1;
+          return acc;
+        }, {});
+        
+        const dynamicChartData = Object.keys(statusCounts).map(key => ({
+          name: key,
+          count: statusCounts[key],
+        })).sort((a, b) => b.count - a.count); // sort highest first
+
+        setCandidatesChartData(dynamicChartData);
+
+        // --- Handle Jobs ---
+        setActiveJobsCount(jobsResult.filter(j => j.status?.toLowerCase() === 'active').length);
+
+        const typeDataAggregation = jobsResult.reduce((acc, job) => {
+          const type = job.type || 'Unknown';
+          acc[type] = (acc[type] || { name: type, count: 0 });
+          acc[type].count += 1;
+          return acc;
+        }, {});
+        setJobsTypeData(Object.values(typeDataAggregation));
+
+        const departmentAggregation = jobsResult.reduce((acc, job) => {
+          const dep = job.department || 'Unknown';
+          acc[dep] = (acc[dep] || { name: dep, value: 0 });
+          acc[dep].value += 1;
+          return acc;
+        }, {});
+        setPieData(Object.values(departmentAggregation));
+
+      } catch (error) {
+        console.error("Failed to fetch dashboard metrics");
+      }
+    };
+    fetchDashboardCounts();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm transition-transform hover:scale-105 duration-300">
+          <h3 className="text-blue-600 font-semibold mb-2">Total Candidates</h3>
+          <p className="text-4xl font-bold text-blue-900">{candidatesCount}</p>
+        </div>
+        <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-sm transition-transform hover:scale-105 duration-300">
+          <h3 className="text-emerald-600 font-semibold mb-2">Hired Candidates</h3>
+          <p className="text-4xl font-bold text-emerald-900">{hiredCount}</p>
+        </div>
+        <div className="bg-purple-50 p-6 rounded-xl border border-purple-100 shadow-sm transition-transform hover:scale-105 duration-300">
+          <h3 className="text-purple-600 font-semibold mb-2">Active Jobs</h3>
+          <p className="text-4xl font-bold text-purple-900">{activeJobsCount}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Candidates Graph */}
+        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm h-[400px]">
+          <h3 className="text-lg font-semibold mb-6 text-slate-800 border-b pb-2">Candidates Overview by Status</h3>
+          <ResponsiveContainer width="100%" height="85%">
+            <BarChart data={candidatesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
+              <RechartsTooltip cursor={{fill: '#F1F5F9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={60} name="Candidates" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        
+        {/* Jobs Graphs */}
+        <div className="grid grid-rows-2 gap-6 h-[400px]">
+          {/* Jobs by Type */}
+          <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm">
+            <h3 className="text-lg font-semibold mb-2 text-slate-800 border-b pb-2">Jobs by Employment Type</h3>
+            <ResponsiveContainer width="100%" height="75%">
+              <BarChart data={jobsTypeData} layout="vertical" margin={{ top: 0, right: 0, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                <RechartsTooltip cursor={{fill: '#F1F5F9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                <Bar dataKey="count" fill="#8B5CF6" radius={[0, 4, 4, 0]} maxBarSize={20} name="Job Postings" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Jobs by Department */}
+          <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm flex items-center justify-between">
+            <div className="w-1/2">
+                <h3 className="text-lg font-semibold mb-2 text-slate-800">Job Departments</h3>
+                <p className="text-sm text-slate-500">Distribution of jobs by specific departments</p>
+            </div>
+            <div className="w-1/2 h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie data={pieData} innerRadius={30} outerRadius={50} fill="#8884d8" paddingAngle={5} dataKey="value">
+                    {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                    </Pie>
+                    <RechartsTooltip />
+                </PieChart>
+                </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

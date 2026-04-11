@@ -1,0 +1,6 @@
+@echo off
+echo Installing backend dependencies if not installed...
+call npm install
+echo Starting Node.js Backend Server...
+call npm run server
+pause
