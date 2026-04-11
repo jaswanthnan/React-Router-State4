@@ -82,10 +82,7 @@ const Candidates = () => {
   };
 
   const handleCancel = () => {
-    const values = form.getFieldsValue();
-    const isFull = values.name && values.role && values.experience && values.status;
-
-    if (isFull && form.isFieldsTouched()) {
+    if (form.isFieldsTouched()) {
       confirm({
         title: 'Are you sure?',
         icon: <ExclamationCircleOutlined className="text-amber-500" />,
@@ -233,18 +230,16 @@ const Candidates = () => {
 
   return (
     <div className="container-fluid py-2 h-full flex flex-col">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="h3 mb-0 text-gray-800 fw-bold">Candidates Management</h2>
-
+      <div className="w-full flex justify-between items-center mb-4">
+        <Input
+          placeholder="Search candidates..."
+          prefix={<SearchOutlined className="text-gray-400" />}
+          onChange={(e) => setQuickFilterText(e.target.value)}
+          className="rounded-md shadow-sm"
+          style={{ width: 300 }}
+          allowClear
+        />
         <Space size="middle">
-          <Input
-            placeholder="Search candidates..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            onChange={(e) => setQuickFilterText(e.target.value)}
-            className="rounded-md shadow-sm"
-            style={{ width: 250 }}
-            allowClear
-          />
           {selectedRows.length > 0 && (
             <>
               <Button icon={<DownloadOutlined />} onClick={onExportClick} className="shadow-sm rounded-md" style={{ borderColor: '#10b981', color: '#10b981' }}>
