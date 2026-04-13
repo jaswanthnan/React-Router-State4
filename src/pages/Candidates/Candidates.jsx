@@ -206,6 +206,8 @@ const Candidates = () => {
       headerName: 'Candidate Name',
       flex: 1,
       minWidth: 250,
+      pinned: 'left',
+      lockPinned: true,
       cellRenderer: NameRenderer,
       checkboxSelection: true,
       headerCheckboxSelection: true
@@ -219,6 +221,8 @@ const Candidates = () => {
       cellRenderer: ActionCellRenderer,
       sortable: false,
       filter: false,
+      pinned: 'right',
+      lockPinned: true
     }
   ], []);
 

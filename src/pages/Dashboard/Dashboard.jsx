@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { api } from '../../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B5CF6', '#EC4899'];
 
@@ -88,13 +88,13 @@ const Dashboard = () => {
         <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm h-[400px]">
           <h3 className="text-lg font-semibold mb-6 text-slate-800 border-b pb-2">Candidates Overview by Status</h3>
           <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={candidatesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <LineChart data={candidatesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
               <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
-              <RechartsTooltip cursor={{fill: '#F1F5F9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} maxBarSize={60} name="Candidates" />
-            </BarChart>
+              <RechartsTooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+              <Line type="monotone" dataKey="count" stroke="#3B82F6" strokeWidth={3} dot={{ stroke: '#3B82F6', strokeWidth: 2, r: 4, fill: 'white' }} activeDot={{ r: 6 }} name="Candidates" />
+            </LineChart>
           </ResponsiveContainer>
         </div>
         
@@ -104,32 +104,34 @@ const Dashboard = () => {
           <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm">
             <h3 className="text-lg font-semibold mb-2 text-slate-800 border-b pb-2">Jobs by Employment Type</h3>
             <ResponsiveContainer width="100%" height="75%">
-              <BarChart data={jobsTypeData} layout="vertical" margin={{ top: 0, right: 0, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
-                <RechartsTooltip cursor={{fill: '#F1F5F9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Bar dataKey="count" fill="#8B5CF6" radius={[0, 4, 4, 0]} maxBarSize={20} name="Job Postings" />
-              </BarChart>
+              <AreaChart data={jobsTypeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
+                <RechartsTooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                <Area type="monotone" dataKey="count" stroke="#8B5CF6" fill="#C4B5FD" name="Job Postings" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Jobs by Department */}
-          <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm flex items-center justify-between">
-            <div className="w-1/2">
-                <h3 className="text-lg font-semibold mb-2 text-slate-800">Job Departments</h3>
-                <p className="text-sm text-slate-500">Distribution of jobs by specific departments</p>
+          <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm flex flex-col justify-between h-full">
+            <div>
+                <h3 className="text-lg font-semibold mb-2 text-slate-800 border-b pb-2">Job Departments</h3>
             </div>
-            <div className="w-1/2 h-full">
+            <div className="w-full flex-grow pt-2">
                 <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                    <Pie data={pieData} innerRadius={30} outerRadius={50} fill="#8884d8" paddingAngle={5} dataKey="value">
-                    {pieData.map((entry, index) => (
+                  <BarChart data={pieData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} allowDecimals={false} />
+                    <RechartsTooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                    <Bar dataKey="value" name="Jobs" radius={[4, 4, 0, 0]}>
+                      {pieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                    </Pie>
-                    <RechartsTooltip />
-                </PieChart>
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
             </div>
           </div>

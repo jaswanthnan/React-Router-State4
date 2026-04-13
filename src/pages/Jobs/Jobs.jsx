@@ -1,52 +1,24 @@
-import { useContext, useState, useRef, useMemo, useCallback, useEffect } from 'react';
-import { Modal, Form, Input, Select, Button, Space, message, Dropdown } from 'antd';
-import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined, DownloadOutlined, SearchOutlined, MoreOutlined } from '@ant-design/icons';
-import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import { api } from '../../services/api';
+import React, { useState, useMemo } from 'react';
+import { Form, Input, Select, Button, Modal, Tag, Card, Row, Col, Typography, message, Space } from 'antd';
+import { SearchOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PlusOutlined } from '@ant-design/icons';
 
+const { Title, Text } = Typography;
 const { confirm } = Modal;
 
+const initialJobs = [
+  { id: '1', title: 'Senior Software Engineer', department: 'Engineering', location: 'Remote', type: 'Full-time', status: 'Active' },
+  { id: '2', title: 'Product Manager', department: 'Product', location: 'New York', type: 'Full-time', status: 'Active' },
+  { id: '3', title: 'UX Designer', department: 'Design', location: 'London', type: 'Contract', status: 'Closed' },
+  { id: '4', title: 'Frontend Developer', department: 'Engineering', location: 'San Francisco', type: 'Full-time', status: 'Active' },
+];
+
 const Jobs = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(initialJobs);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [quickFilterText, setQuickFilterText] = useState('');
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All');
   const [form] = Form.useForm();
-
-  const gridRef = useRef();
-
-  const fetchJobs = async () => {
-    setLoading(true);
-    try {
-      const result = await api.get('/jobs');
-      const formattedJobs = result.map(job => ({ ...job, id: job._id }));
-      setData(formattedJobs);
-    } catch (error) {
-      message.error("Failed to load jobs");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const seedDatabase = async () => {
-    try {
-      setLoading(true);
-      await api.post('/seed');
-      message.success('Test jobs seeded perfectly!');
-      fetchJobs();
-    } catch (err) {
-      message.error('Failed to seed database');
-      setLoading(false);
-    }
-  };
 
   const showAddModal = () => {
     setEditingJob(null);
@@ -54,261 +26,178 @@ const Jobs = () => {
     setIsModalVisible(true);
   };
 
-  const showEditModal = (record) => {
-    setEditingJob(record);
-    form.setFieldsValue(record);
+  const showEditModal = (job) => {
+    setEditingJob(job);
+    form.setFieldsValue(job);
     setIsModalVisible(true);
   };
 
-  const handleDelete = (record) => {
+  const handleDelete = (id) => {
     confirm({
       title: 'Are you sure you want to delete this job?',
-      icon: <ExclamationCircleOutlined className="text-red-500" />,
-      content: `Title: ${record.title}`,
-      okText: 'Yes, Delete',
+      content: 'This action cannot be undone.',
+      okText: 'Yes',
       okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await api.delete(`/jobs/${record.id || record._id}`);
-          message.success('Job formally deleted');
-          fetchJobs();
-        } catch (error) {
-          message.error("Failed to delete job");
-        }
+      cancelText: 'No',
+      onOk: () => {
+        setData(data.filter(job => job.id !== id));
+        message.success('Job deleted successfully');
       },
     });
   };
 
-  const handleBulkDelete = () => {
-    confirm({
-      title: 'Are you sure you want to delete the selected jobs?',
-      icon: <ExclamationCircleOutlined className="text-red-500" />,
-      content: `This will permanently delete ${selectedRows.length} jobs.`,
-      okText: 'Yes, Delete All',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await Promise.all(selectedRows.map(row => api.delete(`/jobs/${row.id || row._id}`)));
-          message.success(`${selectedRows.length} jobs deleted successfully`);
-          setSelectedRows([]);
-          fetchJobs();
-        } catch (error) {
-          message.error("Error bulk deleting jobs");
-        }
-      },
-    });
-  };
-
-  const handleOk = () => {
+  const handleModalOk = () => {
     form.submit();
   };
 
-  const handleCancel = () => {
-    if (form.isFieldsTouched()) {
-      confirm({
-        title: 'Are you sure?',
-        icon: <ExclamationCircleOutlined className="text-amber-500" />,
-        content: 'You have unsaved changes. Are you sure you want to close and lose this data?',
-        okText: 'Yes, Discard',
-        okType: 'danger',
-        cancelText: 'No, Keep Editable',
-        onOk: () => setIsModalVisible(false),
-      });
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const onFinish = (values) => {
+    if (editingJob) {
+      setData(data.map(job => job.id === editingJob.id ? { ...job, id: editingJob.id } : job));
+      message.success('Job updated successfully');
     } else {
-      setIsModalVisible(false);
+      const newJob = { 
+        ...values, 
+        id: Date.now().toString() 
+      };
+      setData([...data, newJob]);
+      message.success('Job added successfully');
     }
+    setIsModalVisible(false);
   };
 
-  const onFinish = async (values) => {
-    try {
-      if (editingJob) {
-        await api.put(`/jobs/${editingJob.id || editingJob._id}`, values);
-        message.success('Job updated successfully');
-      } else {
-        await api.post('/jobs', values);
-        message.success('Job added successfully');
-      }
-      setIsModalVisible(false);
-      fetchJobs();
-    } catch (error) {
-      message.error("Error saving job");
-    }
-  };
-
-  const onExportClick = useCallback(() => {
-    if (gridRef.current && gridRef.current.api) {
-      gridRef.current.api.exportDataAsCsv({
-        fileName: 'jobs_export.csv',
-        onlySelected: true
-      });
-    }
-  }, []);
-
-  const onSelectionChanged = useCallback(() => {
-    if (gridRef.current && gridRef.current.api) {
-      const selectedNodes = gridRef.current.api.getSelectedNodes();
-      const selectedData = selectedNodes.map(node => node.data);
-      setSelectedRows(selectedData);
-    }
-  }, []);
-
-  const ActionCellRenderer = (params) => {
-    const items = [
-      {
-        key: 'edit',
-        icon: <EditOutlined />,
-        label: 'Edit',
-        onClick: () => showEditModal(params.data)
-      },
-      {
-        key: 'delete',
-        icon: <DeleteOutlined className="text-red-500" />,
-        label: <span className="text-red-500">Delete</span>,
-        onClick: () => handleDelete(params.data.id)
-      }
-    ];
-
-    return (
-      <div className="flex items-center h-full py-1">
-        <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
-          <Button type="text" icon={<MoreOutlined style={{ fontSize: '18px' }} />} />
-        </Dropdown>
-      </div>
-    );
-  };
-
-  const StatusRenderer = (params) => {
-    const status = params.value;
-    const colorClass = status === 'Active' ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-slate-600 bg-slate-100 border border-slate-200';
-    return (
-      <div className="flex items-center h-full">
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
-          {status}
-        </span>
-      </div>
-    );
-  };
-
-  const columnDefs = useMemo(() => [
-    {
-      field: 'title',
-      headerName: 'Job Title',
-      flex: 1,
-      minWidth: 250,
-      checkboxSelection: true,
-      headerCheckboxSelection: true
-    },
-    { field: 'department', headerName: 'Department', flex: 1, minWidth: 150 },
-    { field: 'location', headerName: 'Location', flex: 1 },
-    { field: 'type', headerName: 'Type', width: 130 },
-    { field: 'status', headerName: 'Status', width: 130, cellRenderer: StatusRenderer },
-    {
-      headerName: 'Actions',
-      width: 120,
-      cellRenderer: ActionCellRenderer,
-      sortable: false,
-      filter: false,
-    }
-  ], []);
-
-  const defaultColDef = useMemo(() => ({
-    sortable: true,
-    filter: true,
-    resizable: true,
-  }), []);
+  const filteredJobs = useMemo(() => {
+    return data.filter(job => {
+      const titleMatches = (job.title || '').toLowerCase().includes((searchTerm || '').toLowerCase());
+      const departmentMatches = (job.department || '').toLowerCase().includes((searchTerm || '').toLowerCase());
+      const matchesSearch = titleMatches || departmentMatches;
+      const matchesType = filterType === 'All' || job.type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [data, searchTerm, filterType]);
 
   return (
-    <div className="container-fluid py-2 h-full flex flex-col">
+    <div className="container-fluid py-4 min-vh-100 bg-light">
       <div className="w-full flex justify-end items-center mb-4">
         <Space size="middle">
           <Input
             placeholder="Search jobs..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            onChange={(e) => setQuickFilterText(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="rounded-md shadow-sm"
             style={{ width: 250 }}
             allowClear
           />
-          {selectedRows.length > 0 && (
-            <>
-              <Button icon={<DownloadOutlined />} onClick={onExportClick} className="shadow-sm rounded-md" style={{ borderColor: '#10b981', color: '#10b981' }}>
-                Export CSV ({selectedRows.length})
-              </Button>
-              <Button danger icon={<DeleteOutlined />} onClick={handleBulkDelete} className="shadow-sm rounded-md">
-                Delete Selected ({selectedRows.length})
-              </Button>
-            </>
-          )}
-          <button className="btn btn-primary shadow-sm px-4 rounded-md" onClick={showAddModal}>
-            Add Job
-          </button>
+          <Select
+            value={filterType}
+            onChange={setFilterType}
+            style={{ width: 150 }}
+            className="shadow-sm"
+            options={[
+              { value: 'All', label: 'All Types' },
+              { value: 'Full-time', label: 'Full-time' },
+              { value: 'Part-time', label: 'Part-time' },
+              { value: 'Contract', label: 'Contract' },
+              { value: 'Internship', label: 'Internship' },
+            ]}
+          />
+          <Button type="primary" icon={<PlusOutlined />} onClick={showAddModal} style={{ backgroundColor: '#10b981', borderColor: '#10b981' }} className="shadow-sm rounded-md">
+            Post a Job
+          </Button>
         </Space>
       </div>
 
-      {data.length === 0 && !loading && (
-        <div className="p-4 text-center border-b border-gray-100">
-          <p className="text-gray-500 mb-3">Database is empty.</p>
-          <button className="btn btn-outline-primary btn-sm" onClick={seedDatabase}>Seed Test Data to MongoDB</button>
-        </div>
-      )}
-
-      <div className="ag-theme-alpine w-full">
-        <AgGridReact
-          ref={gridRef}
-          rowData={data}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          quickFilterText={quickFilterText}
-          animateRows={true}
-          pagination={true}
-          paginationPageSize={10}
-          domLayout='autoHeight'
-          rowSelection="multiple"
-          onSelectionChanged={onSelectionChanged}
-          suppressRowClickSelection={true}
-          rowHeight={50}
-          suppressCellFocus={true}
-        />
-      </div>
+      <Row gutter={[24, 24]}>
+        {filteredJobs.length > 0 ? (
+          filteredJobs.map(job => (
+            <Col xs={24} sm={12} lg={8} key={job.id}>
+              <Card 
+                hoverable 
+                className="h-100 shadow-sm border-0 rounded-3"
+                actions={[
+                  <Button type="text" icon={<EditOutlined />} onClick={() => showEditModal(job)}>Edit</Button>,
+                  <Button type="text" danger icon={<DeleteOutlined />} onClick={() => handleDelete(job.id)}>Delete</Button>
+                ]}
+              >
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <Tag color={job.status === 'Active' ? 'green' : 'default'} className="rounded-pill px-3 py-1 m-0">
+                    {job.status}
+                  </Tag>
+                  <Tag color="geekblue" className="rounded-pill m-0">{job.type}</Tag>
+                </div>
+                
+                <Title level={4} className="mt-3 mb-1 text-truncate" title={job.title}>{job.title}</Title>
+                <Text type="secondary" className="d-block mb-3">{job.department}</Text>
+                
+                <div className="d-flex align-items-center text-muted">
+                  <EnvironmentOutlined className="me-2 text-danger" />
+                  <span className="text-truncate">{job.location}</span>
+                </div>
+              </Card>
+            </Col>
+          ))
+        ) : (
+          <Col span={24}>
+            <div className="text-center py-5 text-muted bg-white border rounded">
+              <h4 className="mb-2">No jobs found</h4>
+              <p className="mb-0">Try adjusting your search term or filter criteria</p>
+            </div>
+          </Col>
+        )}
+      </Row>
 
       <Modal
-        title={<span className="text-lg font-bold">{editingJob ? "Edit Job" : "Add New Job"}</span>}
+        title={<span className="fs-5 fw-bold">{editingJob ? 'Edit Job Listing' : 'Post New Job'}</span>}
         open={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
         okText={editingJob ? "Save Changes" : "Create Job"}
         destroyOnClose
+        centered
+        width={600}
       >
         <Form form={form} layout="vertical" onFinish={onFinish} className="mt-4">
           <Form.Item name="title" label="Job Title" rules={[{ required: true, message: 'Please enter job title' }]}>
             <Input placeholder="e.g. Senior Software Engineer" size="large" />
           </Form.Item>
 
-          <Form.Item name="department" label="Department" rules={[{ required: true, message: 'Please enter the department' }]}>
-            <Input placeholder="e.g. Engineering" size="large" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="department" label="Department" rules={[{ required: true, message: 'Please enter department' }]}>
+                <Input placeholder="e.g. Engineering" size="large" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="location" label="Location" rules={[{ required: true, message: 'Please enter location' }]}>
+                <Input placeholder="e.g. Remote, New York" size="large" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item name="location" label="Location" rules={[{ required: true, message: 'Please enter location' }]}>
-            <Input placeholder="e.g. Remote, New York" size="large" />
-          </Form.Item>
-
-          <Form.Item name="type" label="Employment Type" rules={[{ required: true, message: 'Please select type' }]}>
-            <Select placeholder="Select Type" size="large">
-              <Select.Option value="Full-time">Full-time</Select.Option>
-              <Select.Option value="Part-time">Part-time</Select.Option>
-              <Select.Option value="Contract">Contract</Select.Option>
-              <Select.Option value="Internship">Internship</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="status" label="Current Status" rules={[{ required: true, message: 'Please select a status' }]}>
-            <Select placeholder="Select job status" size="large">
-              <Select.Option value="Active">Active</Select.Option>
-              <Select.Option value="Closed">Closed</Select.Option>
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="type" label="Employment Type" rules={[{ required: true, message: 'Please select employment type' }]}>
+                <Select placeholder="Select Type" size="large">
+                  <Select.Option value="Full-time">Full-time</Select.Option>
+                  <Select.Option value="Part-time">Part-time</Select.Option>
+                  <Select.Option value="Contract">Contract</Select.Option>
+                  <Select.Option value="Internship">Internship</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="status" label="Current Status" rules={[{ required: true, message: 'Please select status' }]}>
+                <Select placeholder="Select status" size="large">
+                  <Select.Option value="Active">Active</Select.Option>
+                  <Select.Option value="Closed">Closed</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </Modal>
     </div>
