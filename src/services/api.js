@@ -3,7 +3,10 @@ const BASE_URL = 'http://localhost:5000/api';
 export const api = {
   get: async (endpoint) => {
     const response = await fetch(`${BASE_URL}${endpoint}`);
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || 'API Error');
+    }
     return response.json();
   },
   post: async (endpoint, data) => {
@@ -12,7 +15,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || 'API Error');
+    }
     return response.json();
   },
   put: async (endpoint, data) => {
@@ -21,14 +27,20 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || 'API Error');
+    }
     return response.json();
   },
   delete: async (endpoint) => {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'DELETE',
     });
-    if (!response.ok) throw new Error('API Error');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || 'API Error');
+    }
     return response.json();
   }
 };
