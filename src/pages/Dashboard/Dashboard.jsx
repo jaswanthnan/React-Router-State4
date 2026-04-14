@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
 import { api } from '../../services/api';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -7,6 +8,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B5CF6', '#EC4899'
 
 const Dashboard = () => {
   const { state } = useContext(AppContext);
+  const navigate = useNavigate();
   const [candidatesCount, setCandidatesCount] = useState(0);
   const [hiredCount, setHiredCount] = useState(0);
   const [candidatesChartData, setCandidatesChartData] = useState([]);
@@ -69,7 +71,10 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm transition-transform hover:scale-105 duration-300">
+        <div 
+          className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm transition-transform hover:scale-105 duration-300 cursor-pointer"
+          onClick={() => navigate('/candidates')}
+        >
           <h3 className="text-blue-600 font-semibold mb-2">Total Candidates</h3>
           <p className="text-4xl font-bold text-blue-900">{candidatesCount}</p>
         </div>

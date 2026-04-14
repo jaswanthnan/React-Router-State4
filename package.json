@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "ag-grid-community": "^31.3.1",
+    "ag-grid-enterprise": "^31.3.1",
     "ag-grid-react": "^31.3.1",
     "antd": "^5.16.1",
     "bootstrap": "^5.3.3",

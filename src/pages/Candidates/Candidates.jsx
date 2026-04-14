@@ -4,6 +4,7 @@ import { UserOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, 
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import 'ag-grid-enterprise';
 import { api } from '../../services/api';
 
 const { confirm } = Modal;
@@ -284,6 +285,7 @@ const Candidates = () => {
           suppressRowClickSelection={true}
           rowHeight={50}
           suppressCellFocus={true}
+          sideBar={'columns'}
           overlayLoadingTemplate={loading ? '<span class="ag-overlay-loading-center">Fetching candidates...</span>' : null}
         />
       </div>
