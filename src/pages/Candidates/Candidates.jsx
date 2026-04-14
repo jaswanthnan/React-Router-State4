@@ -212,6 +212,7 @@ const Candidates = () => {
       checkboxSelection: true,
       headerCheckboxSelection: true
     },
+    { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
     { field: 'role', headerName: 'Role', flex: 1, minWidth: 150 },
     { field: 'experience', headerName: 'Experience', width: 130 },
     { field: 'status', headerName: 'Status', width: 150, cellRenderer: StatusRenderer },
@@ -298,6 +299,10 @@ const Candidates = () => {
         <Form form={form} layout="vertical" onFinish={onFinish} className="mt-4">
           <Form.Item name="name" label="Full Name" rules={[{ required: true, message: 'Please enter your full name' }]}>
             <Input placeholder="e.g. John Doe" size="large" />
+          </Form.Item>
+
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Please enter the email address' }, { type: 'email', message: 'Please enter a valid email' }]}>
+            <Input placeholder="e.g. candidate@gmail.com" size="large" />
           </Form.Item>
 
           <Form.Item name="role" label="Role" rules={[{ required: true, message: 'Please enter the role' }]}>

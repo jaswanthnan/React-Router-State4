@@ -11,8 +11,7 @@ export const useFetch = (url) => {
         setLoading(true);
         const response = await fetch(url);
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          throw new Error(errorData.message || 'Network response was not ok');
+          throw new Error('Network response was not ok');
         }
         const result = await response.json();
         setData(result);

@@ -4,6 +4,8 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import Candidates from '../pages/Candidates/Candidates';
 import Jobs from '../pages/Jobs/Jobs';
 
+import NotFound from '../pages/NotFound/NotFound';
+
 const AppRoutes = () => {
   return (
     <Router>
@@ -14,6 +16,8 @@ const AppRoutes = () => {
           <Route path="candidates" element={<Candidates />} />
           <Route path="jobs" element={<Jobs />} />
         </Route>
+        {/* Catch-All 404 Route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

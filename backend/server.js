@@ -103,11 +103,11 @@ app.post('/api/seed', async (req, res) => {
     await Candidate.deleteMany(); // Clear existing
     await Job.deleteMany();       // Clear existing jobs
     const seedData = [
-      { name: 'John Doe', role: 'Frontend Engineer', experience: '3 Years', status: 'In Review' },
-      { name: 'Jane Smith', role: 'Backend Engineer', experience: '5 Years', status: 'Hired' },
-      { name: 'Bob Johnson', role: 'UI/UX Designer', experience: '2 Years', status: 'Pending' },
-      { name: 'Alice Williams', role: 'Data Analyst', experience: '1 Year', status: 'In Review' },
-      { name: 'Charlie Brown', role: 'DevOps Engineer', experience: '4 Years', status: 'Hired' },
+      { name: 'John Doe', email: 'john.doe@gmail.com', role: 'Frontend Engineer', experience: '3 Years', status: 'In Review' },
+      { name: 'Jane Smith', email: 'jane.smith@gmail.com', role: 'Backend Engineer', experience: '5 Years', status: 'Hired' },
+      { name: 'Bob Johnson', email: 'bob.johnson@gmail.com', role: 'UI/UX Designer', experience: '2 Years', status: 'Pending' },
+      { name: 'Alice Williams', email: 'alice.williams@gmail.com', role: 'Data Analyst', experience: '1 Year', status: 'In Review' },
+      { name: 'Charlie Brown', email: 'charlie.brown@gmail.com', role: 'DevOps Engineer', experience: '4 Years', status: 'Hired' },
     ];
     await Candidate.insertMany(seedData);
 

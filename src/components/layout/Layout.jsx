@@ -48,13 +48,20 @@ const AppLayout = () => {
   return (
     <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       <AntLayout style={{ minHeight: '100vh' }}>
-        <Sider width={250} theme={isDarkMode ? 'dark' : 'light'} className="border-r border-gray-200 dark:border-gray-800">
+        <Sider 
+          breakpoint="lg" 
+          collapsedWidth="0" 
+          width={250} 
+          theme={isDarkMode ? 'dark' : 'light'} 
+          className="border-r border-gray-200 dark:border-gray-800"
+          style={{ zIndex: 1000 }}
+        >
           <div className="pt-4"></div>
           <Menu theme={isDarkMode ? 'dark' : 'light'} mode="inline" defaultSelectedKeys={['dashboard']} items={menuItems} />
         </Sider>
         <AntLayout>
-          <Header className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white'} px-6 flex justify-between items-center shadow-sm`}>
-            <h2 className={`text-xl font-semibold m-0 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{getPageTitle()}</h2>
+          <Header className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white'} px-4 md:px-6 flex justify-between items-center shadow-sm w-full`}>
+            <h2 className={`text-lg md:text-xl font-semibold m-0 truncate pr-2 ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{getPageTitle()}</h2>
             <Button
               type="text"
               icon={isDarkMode ? <BulbFilled /> : <BulbOutlined />}
@@ -64,7 +71,7 @@ const AppLayout = () => {
               {isDarkMode ? 'Light Mode' : 'Dark Mode'}
             </Button>
           </Header>
-          <Content className="m-6 p-6">
+          <Content className="m-2 md:m-6 p-2 md:p-6 overflow-x-hidden">
             <Outlet />
           </Content>
         </AntLayout>
